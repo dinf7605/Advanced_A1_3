@@ -248,12 +248,41 @@ CSS·JS가 옛날 것  → 강력 새로고침(Ctrl+Shift+R)
 - [x] **토큰 (3,950자)**: in=4,301 / out=1,255(sonnet)~1,669(haiku)
 - [ ] 쿼터 초과 시 오는 상태 코드는? (아직 도달 안 함. 429로 가정하고 매핑해 둠)
 
-**Day 2 — Vercel**
+**Day 2 — Vercel 배포. 2026-08-26 `https://advanceda13.vercel.app` 로 확인 완료.**
 
-- [x] `api/_shared.py` import — **로컬에서는 동작.** 각 함수 상단에
-      `sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))`를 넣어 해결했다.
-      **배포 환경에서는 아직 확인 안 됨** — 첫 배포 후 `/api/health`로 확인할 것.
-- [ ] Vercel이 이 프로젝트를 `Other` 프리셋으로 잡는가? (`requirements.txt`에 `requests`만 있을 때)
+- [x] **`api/_shared.py` import가 배포에서도 동작한다.** 각 함수 상단의
+      `sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))` 두 줄로 충분했다.
+      **세 파일을 자체 완결로 되돌릴 필요가 없다.**
+- [x] **`requirements.txt`에 `requests`만 → 프리셋 오감지 없음.** `/api/*` 전부 함수로 잡혔다.
+- [x] **Python 3.12.13** (`.python-version`의 3.12 적용됨), `requests` 2.34.2
+- [x] `/api/_shared` → **404** (밑줄 파일은 라우트가 되지 않는다 — 문서대로)
+- [x] `GET /api/summarize` → **405** JSON (HTML 오류 페이지 아님)
+
+**🚨 배포에서만 드러난 버그 — 빈 문자열 환경 변수**
+
+Vercel 대시보드에서 변수 **이름만 만들고 값을 비워 두면** 키가 "없는" 것이 아니라
+**"빈 문자열로 존재"**합니다. `os.environ.get(키, 기본값)`은 키가 **없을 때만** 기본값을
+쓰므로 `""`가 그대로 흘러 들어가 `requests.post("")`가 **0.3초 만에** 실패했습니다.
+
+```python
+os.environ.get("COPA_API_URL", 기본값)     # ❌ "" 가 그대로 온다
+os.environ.get("COPA_API_URL") or 기본값   # ✅ 빈 값도 기본값으로
+```
+
+- **`/api/health`가 이 상태를 이미 드러내고 있었습니다** — `model: ""`, `custom_api_url: true`.
+  진단 엔드포인트를 Day 2에 먼저 만든 이유가 이것입니다.
+- `MissingSchema`/`InvalidURL`은 `RequestException` 하위라 **`UPSTREAM_TIMEOUT`으로 뭉뚱그려졌습니다.**
+  0.3초 만에 끝나는 실패를 "타임아웃"이라 부르면 로그를 봐도 원인을 알 수 없어 `BAD_CONFIG`로 분리했습니다.
+
+**배포 URL에서 통과한 것 (T1~T11)**
+
+- 라우팅 4섹션 / 알 수 없는 해시 → 홈 / 뒤로가기
+- 빈 입력·짧은 입력 → **fetch 0건**, 4,200자 → 카운터 빨강
+- **T9 AI 기능 9.0초** — 요약 3 · 용어 4~5 · 퀴즈 5(O/X 2 + 객관식 3), 정답이 전부 보기 안에
+- T10 채점 5/5, 해설 채점 전 0개 → 후 5개, 입력 비활성, 쿨다운 10초 동작
+- T11 기록 저장 / 다크 모드 / 로고·파비콘 로드
+- 375px 4개 섹션 **가로 스크롤 0px**, 햄버거 열림→클릭→닫힘, textarea 16px, 버튼 49px
+- **콘솔 에러 0건**
 
 **Day 4~5 — 실측치**
 
