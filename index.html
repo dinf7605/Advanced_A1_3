@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>되새김 — 노트를 요약과 퀴즈로</title>
+  <meta name="description" content="학습 노트를 붙여넣으면 3줄 요약·핵심 용어·퀴즈 5문항으로 되돌려줍니다.">
+  <link rel="icon" href="images/logo.svg">
+  <!-- 카톡·슬랙으로 배포 URL을 공유할 때 미리보기 카드가 뜬다 (images/ 폴더의 용도) -->
+  <meta property="og:title" content="되새김 — 노트를 요약과 퀴즈로">
+  <meta property="og:description" content="붙여넣으면, 되새길 것만 남습니다.">
+  <meta property="og:image" content="images/og-cover.png">
+
+  <!-- ★ 다크 모드 깜빡임(FOUC) 방지: CSS보다 먼저, 인라인으로 (PRD §10.1)
+       js/theme.js를 </body> 앞에서 로드하면 화면이 그려진 뒤에 적용돼 흰 화면이 번쩍인다 -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem("doesaegim.theme");
+      if (saved) document.documentElement.dataset.theme = saved;
+    })();
+  </script>
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+<a class="skip-link" href="#main">본문으로 건너뛰기</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="logo" href="#/">
+      <img src="images/logo.svg" alt="" width="28" height="28">
+      <span>되새김</span>
+    </a>
+
+    <button class="nav-toggle" id="nav-toggle" aria-label="메뉴 열기" aria-expanded="false" aria-controls="site-nav">
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+    </button>
+
+    <nav class="site-nav" id="site-nav" aria-label="주요 메뉴">
+      <a href="#/">홈</a>
+      <a href="#/study">되새김</a>
+      <a href="#/history">내 기록</a>
+      <a href="#/guide">가이드 · 문의</a>
+    </nav>
+
+    <button class="theme-toggle" id="theme-toggle" aria-label="다크 모드 전환" title="다크 모드 전환">
+      <span aria-hidden="true">🌙</span>
+    </button>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ══════════════ ① 홈 ══════════════ -->
+  <section id="home" class="view" data-route="/">
+    <div class="hero">
+      <p class="eyebrow">학습 노트 되새김 도구</p>
+      <h1>붙여넣으면,<br>되새길 것만 남습니다.</h1>
+      <p class="lead">
+        수업 필기나 아티클을 그대로 붙여넣으세요.
+        <strong>3줄 요약 · 핵심 용어 · 확인 퀴즈 5문항</strong>으로 되돌려 드립니다.
+      </p>
+      <a class="btn btn-primary btn-lg" href="#/study">지금 되새기기 →</a>
+      <p class="hint">가입 없이 바로 사용할 수 있어요.</p>
+    </div>
+
+    <h2 class="section-title">이렇게 씁니다</h2>
+    <ol class="steps">
+      <li class="card step">
+        <span class="step-num">1</span>
+        <h3>붙여넣기</h3>
+        <p>오늘 필기한 내용을 통째로 복사해서 넣습니다. 정리하지 않아도 됩니다.</p>
+      </li>
+      <li class="card step">
+        <span class="step-num">2</span>
+        <h3>과목 · 난이도 선택</h3>
+        <p>과목에 맞는 말투로, 난이도에 맞는 깊이로 문제를 만듭니다.</p>
+      </li>
+      <li class="card step">
+        <span class="step-num">3</span>
+        <h3>요약 읽고 퀴즈 풀기</h3>
+        <p>읽기만 하면 남지 않습니다. <strong>떠올려야</strong> 남습니다.</p>
+      </li>
+    </ol>
+
+    <h2 class="section-title">왜 퀴즈까지 만드나요?</h2>
+    <div class="card compare">
+      <div>
+        <h3>직접 하면</h3>
+        <ul>
+          <li>노트 재독 15~20분</li>
+          <li>뭘 외워야 할지 스스로 판단</li>
+          <li><strong>스스로 낸 문제는 이미 답을 안다</strong></li>
+        </ul>
+      </div>
+      <div>
+        <h3>되새김이 하면</h3>
+        <ul>
+          <li>요약 3줄 읽기 30초</li>
+          <li>핵심 용어 3~5개가 뽑혀 나옴</li>
+          <li><strong>제3자 시점의 퀴즈 5문항</strong></li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">
+      되새김질(반추)에서 이름을 가져왔습니다. 한 번 삼킨 내용을 다시 꺼내 씹어야 소화된다는
+      학습법(인출 연습)을 그대로 이름으로 썼습니다.
+    </p>
+  </section>
+
+  <!-- ══════════════ ② 되새김 (AI) ══════════════ -->
+  <section id="study" class="view" data-route="/study">
+    <h1 class="section-title">되새김</h1>
+    <p class="lead">노트를 붙여넣으면 요약·용어·퀴즈를 만들어 드립니다.</p>
+
+    <form class="card" id="study-form" novalidate>
+      <div class="field-row">
+        <div class="field">
+          <label for="category">과목</label>
+          <select id="category" name="category">
+            <option value="일반">일반</option>
+            <option value="IT">IT</option>
+            <option value="경영">경영</option>
+            <option value="과학">과학</option>
+            <option value="어학">어학</option>
+          </select>
+        </div>
+
+        <fieldset class="field">
+          <legend>난이도</legend>
+          <div class="radio-group">
+            <label class="chip"><input type="radio" name="level" value="쉬움"><span>쉬움</span></label>
+            <label class="chip"><input type="radio" name="level" value="보통" checked><span>보통</span></label>
+            <label class="chip"><input type="radio" name="level" value="어려움"><span>어려움</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="field">
+        <label for="note">학습 노트</label>
+        <textarea id="note" name="note" rows="10"
+                  placeholder="수업 필기나 읽은 아티클을 붙여넣으세요. (100자 이상 4,000자 이하)"></textarea>
+        <div class="field-foot">
+          <span class="counter" id="counter">0 / 4,000자</span>
+          <button type="button" class="btn btn-ghost btn-sm" id="sample-btn">예시 넣기</button>
+        </div>
+        <p class="field-error" id="note-error" role="alert" hidden></p>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">되새기기</button>
+    </form>
+
+    <!-- 로딩 (마이크로 인터랙션 — 스켈레톤) -->
+    <div class="skeleton-wrap" id="loading" hidden aria-hidden="true">
+      <p class="loading-text">요약하는 중이에요… <span class="muted">(보통 8~15초)</span></p>
+      <div class="card skeleton"><span></span><span></span><span></span></div>
+      <div class="card skeleton"><span></span><span></span></div>
+      <div class="card skeleton"><span></span><span></span><span></span></div>
+    </div>
+
+    <!-- 오류 -->
+    <div class="card alert" id="error-box" hidden role="alert">
+      <p class="alert-icon" aria-hidden="true">⚠️</p>
+      <p class="alert-message" id="error-message"></p>
+      <button type="button" class="btn btn-secondary" id="retry-btn" hidden>다시 시도</button>
+    </div>
+
+    <!-- 결과 -->
+    <div id="result" aria-live="polite"></div>
+  </section>
+
+  <!-- ══════════════ ③ 내 기록 ══════════════ -->
+  <section id="history" class="view" data-route="/history">
+    <h1 class="section-title">내 기록</h1>
+    <p class="lead">
+      최근 10건까지 <strong>이 브라우저에</strong> 저장됩니다. 서버에는 저장되지 않습니다.
+    </p>
+    <div id="history-list"></div>
+    <button type="button" class="btn btn-ghost" id="clear-history" hidden>전체 비우기</button>
+  </section>
+
+  <!-- ══════════════ ④ 가이드 · 문의 ══════════════ -->
+  <section id="guide" class="view" data-route="/guide">
+    <h1 class="section-title">되새김 200% 쓰는 법</h1>
+
+    <details class="card accordion" open>
+      <summary>오늘 만든 퀴즈는 내일 다시 풀기</summary>
+      <p>
+        같은 내용을 몰아서 세 번 보는 것보다, 하루 간격을 두고 세 번 보는 쪽이 오래 남습니다.
+        [내 기록]에 저장해 두고 다음 날 다시 열어보세요. 잊어갈 때쯤 다시 꺼내는 것이 핵심입니다.
+      </p>
+    </details>
+
+    <details class="card accordion">
+      <summary>요약을 먼저 읽지 말고 퀴즈부터</summary>
+      <p>
+        요약을 읽으면 "안다"는 느낌이 생기지만, 그 느낌은 기억과 다릅니다.
+        먼저 퀴즈를 풀어 <strong>모르는 것을 확인한 뒤</strong> 요약을 읽으면 같은 시간에 훨씬 많이 남습니다.
+      </p>
+    </details>
+
+    <details class="card accordion">
+      <summary>틀린 문항의 용어만 노트에서 다시 찾기</summary>
+      <p>
+        전부 다시 읽지 마세요. 틀린 문항의 해설에 나온 용어를 원본 노트에서 찾아 그 부분만 읽습니다.
+        복습 시간이 20분에서 5분으로 줄어듭니다.
+      </p>
+    </details>
+
+    <h2 class="section-title">자주 묻는 질문</h2>
+
+    <details class="card accordion">
+      <summary>제가 넣은 노트가 저장되나요?</summary>
+      <p>
+        결과는 <strong>브라우저 안(localStorage)에만</strong> 저장됩니다. 서버에 남기지 않습니다.
+        [내 기록]에서 언제든 지울 수 있고, 브라우저 데이터를 지우면 함께 사라집니다.
+      </p>
+    </details>
+
+    <details class="card accordion">
+      <summary>왜 결과가 나오는 데 시간이 걸리나요?</summary>
+      <p>
+        노트 전체를 읽고 요약·용어·문제를 한 번에 만들기 때문입니다. 보통 8~15초 걸립니다.
+        노트가 길수록 오래 걸리니, 너무 느리면 절반으로 나눠서 넣어 보세요.
+      </p>
+    </details>
+
+    <details class="card accordion">
+      <summary>퀴즈 내용이 노트와 다른 것 같아요.</summary>
+      <p>
+        되새김은 <strong>붙여넣은 노트만</strong> 근거로 삼도록 만들어져 있지만, 100% 정확하지는 않습니다.
+        해설에 적힌 근거를 원본 노트에서 확인하는 습관을 함께 가져가세요.
+        내용이 너무 짧으면(100자 미만) 근거가 부족해 품질이 떨어집니다.
+      </p>
+    </details>
+
+    <details class="card accordion">
+      <summary>무료인가요?</summary>
+      <p>
+        학습용으로 만든 과제 프로젝트라 무료입니다. 다만 AI 호출량에 한도가 있어
+        연속으로 많이 사용하면 잠시 제한될 수 있습니다.
+      </p>
+    </details>
+
+    <h2 class="section-title">문의</h2>
+    <form class="card" id="feedback-form" novalidate>
+      <div class="field-row">
+        <div class="field">
+          <label for="fb-name">이름</label>
+          <input type="text" id="fb-name" name="name" maxlength="40" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="fb-email">이메일</label>
+          <input type="email" id="fb-email" name="email" maxlength="40" autocomplete="email">
+        </div>
+      </div>
+      <div class="field">
+        <label for="fb-message">내용</label>
+        <textarea id="fb-message" name="message" rows="5" maxlength="1000"
+                  placeholder="불편했던 점이나 있었으면 하는 기능을 알려주세요."></textarea>
+      </div>
+      <label class="checkbox">
+        <input type="checkbox" id="fb-include-topic">
+        <span>가장 최근에 만든 요약의 <strong>제목</strong>을 함께 보내기 (노트 원문은 보내지 않습니다)</span>
+      </label>
+      <p class="field-error" id="fb-error" role="alert" hidden></p>
+      <button type="submit" class="btn btn-primary" id="fb-submit">보내기</button>
+    </form>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>되새김 · 2026 AI활용학습 A1-3 · 김재민</p>
+  <p class="muted">노트는 서버에 저장되지 않습니다.</p>
+</footer>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="js/mock.js"></script>
+<script src="js/api.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/router.js"></script>
+<script src="js/history.js"></script>
+<script src="js/study.js"></script>
+<script src="js/feedback.js"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+/* base.css — 리셋 · CSS 변수(라이트/다크) · 타이포그래피 (PRD §10.1)
+   CSS의 역할: "어떻게 보이는가". 구조는 HTML, 동작은 JS가 담당한다. */
+
+/* ── 색 토큰 ─────────────────────────────────────────────────────
+   라이트를 :root 에 전부 정의하고, 다크에서 값만 덮어쓴다.
+   ★ :root:not([data-theme="light"]) 가드를 빼지 말 것 ★
+   없으면 시스템이 다크인 사용자가 수동으로 라이트를 골라도
+   미디어 쿼리가 덮어써서 토글이 한쪽 방향으로만 작동한다. */
+:root {
+  --bg:        #fbfaf7;
+  --surface:   #ffffff;
+  --surface-2: #f3f1ec;
+  --text:      #1c1b19;
+  --muted:     #6b6862;
+  --brand:     #2f6f5e;
+  --brand-ink: #ffffff;
+  --brand-soft:#e4f0eb;
+  --border:    #e5e2da;
+  --danger:    #a8321f;
+  --danger-soft:#fbecea;
+  --success:   #1f6b45;
+  --shadow:    0 1px 2px rgba(28, 27, 25, .06), 0 8px 24px rgba(28, 27, 25, .05);
+
+  --radius:    12px;
+  --radius-sm: 8px;
+  --maxw:      1080px;
+  --gap:       1.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:        #16181a;
+    --surface:   #1f2225;
+    --surface-2: #282c30;
+    --text:      #eceae5;
+    --muted:     #a5a29b;
+    --brand:     #6fc0a6;
+    --brand-ink: #10231d;
+    --brand-soft:#22322c;
+    --border:    #343940;
+    --danger:    #f0917f;
+    --danger-soft:#33221f;
+    --success:   #7fc9a2;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #16181a;
+  --surface:   #1f2225;
+  --surface-2: #282c30;
+  --text:      #eceae5;
+  --muted:     #a5a29b;
+  --brand:     #6fc0a6;
+  --brand-ink: #10231d;
+  --brand-soft:#22322c;
+  --border:    #343940;
+  --danger:    #f0917f;
+  --danger-soft:#33221f;
+  --success:   #7fc9a2;
+  --shadow:    0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+}
+
+/* ── 리셋 ────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  /* 긴 영어 단어·URL이 카드를 밀어내지 않게 (PRD §5.3) */
+  overflow-wrap: anywhere;
+  word-break: keep-all;   /* 한국어는 어절 단위로 줄바꿈 */
+}
+
+@media (min-width: 1024px) { body { font-size: 16px; } }
+
+h1, h2, h3 { line-height: 1.35; margin: 0 0 .5em; word-break: keep-all; }
+h1 { font-size: 1.9rem; letter-spacing: -.02em; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.05rem; }
+p  { margin: 0 0 1em; }
+ul, ol { margin: 0 0 1em; padding-left: 1.2em; }
+li { margin-bottom: .35em; }
+
+a { color: var(--brand); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+
+img, svg { max-width: 100%; height: auto; }
+
+strong { font-weight: 700; }
+
+.muted { color: var(--muted); }
+
+/* 포커스 링을 지우지 않는다. 키보드 사용자의 유일한 위치 표시다. (PRD §5.4) */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 스크린리더 전용 / 건너뛰기 링크 */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--brand);
+  color: var(--brand-ink);
+  padding: .6rem 1rem;
+  z-index: 100;
+}
+.skip-link:focus { left: 0; }
+
+/* ── 움직임 최소화 ────────────────────────────────────────────
+   전정기관이 예민한 사용자에게 움직임은 불편이 아니라 증상이다. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
