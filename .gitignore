@@ -1,0 +1,16 @@
+# 환경 변수 — .env* 로 적어야 .env.local 까지 걸린다 (PRD §9.3)
+.env
+.env.*
+!.env.example
+
+# Vercel
+.vercel
+
+# Python
+__pycache__/
+*.pyc
+
+# OS / 편집기
+.DS_Store
+Thumbs.db
+node_modules/
