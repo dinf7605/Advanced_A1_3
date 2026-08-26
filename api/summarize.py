@@ -20,9 +20,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _shared import client_ip, fail, json_response, rate_limited, read_json_body  # noqa: E402
 
 API_URL = os.environ.get("COPA_API_URL", "https://copa.codyssey.kr/v1/messages")
-MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-4")
+MODEL = os.environ.get("CLAUDE_MODEL", "claude-haiku-4")
 MIN_LEN, MAX_LEN = 100, 4000
-TIMEOUT = 25  # 초 (PRD §8.3 타임아웃 사다리: 25×2 < 60(프론트) < 70(Vercel))
+TIMEOUT = 40  # 초 (PRD §8.3 타임아웃 사다리: 40×2 < 90(프론트) < 100(Vercel))
+#  실측(3,950자): claude-haiku-4 10.5초 / claude-sonnet-4 19~24초.
+#  sonnet 은 편차가 커서 25초로는 부족했다 — 실측으로 40초까지 올렸다.
 MAX_TOKENS = 4096
 
 CATEGORIES = ("일반", "IT", "경영", "과학", "어학")
@@ -93,7 +95,7 @@ def call_claude(user_prompt: str) -> tuple[dict | None, str | None]:
                 "messages": [{"role": "user", "content": user_prompt}],
                 # ❌ temperature / thinking / output_config 는 규격에 없다 (PRD §6.3)
             },
-            timeout=(5, TIMEOUT),                  # (연결 5초, 읽기 25초)
+            timeout=(5, TIMEOUT),                  # (연결 5초, 읽기 40초)
         )
     except requests.exceptions.Timeout:
         return None, "UPSTREAM_TIMEOUT"
@@ -206,7 +208,7 @@ class handler(BaseHTTPRequestHandler):  # ★ 소문자 handler ★
         if rate_limited(client_ip(self)):
             return fail(self, "RATE_LIMITED")
 
-        # 4) 키 확인 — 없는 걸 먼저 알면 25초 기다릴 필요가 없다
+        # 4) 키 확인 — 없는 걸 먼저 알면 40초 기다릴 필요가 없다
         if not os.environ.get("ANTHROPIC_API_KEY"):
             print("[summarize] ANTHROPIC_API_KEY 미설정 — Vercel 환경 변수를 확인하고 재배포")
             return fail(self, "NO_API_KEY")

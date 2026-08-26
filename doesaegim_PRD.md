@@ -24,7 +24,7 @@
 | 서비스 아이디어 | **학습노트 요약·퀴즈 생성기** | 입력(긴 텍스트)과 출력(구조화된 JSON)이 명확해 "입력 → 결과 출력" 요건을 증명하기 쉽고, 입력이 길어서 **타임아웃·길이 제한 처리**가 자연스럽게 학습 포인트가 됨 |
 | AI API | **Claude API — 교육용 게이트웨이** `https://copa.codyssey.kr/v1/messages` | 과정에서 제공하는 엔드포인트. 규격은 §1.3 |
 | 호출 방법 | **`requests`로 직접 HTTP 호출** (`anthropic` SDK 미사용) | 과정이 제공한 규격이 `requests` 기준이다. 게이트웨이가 SDK의 추가 헤더·파라미터까지 받아준다는 보장이 없으므로 **검증된 형태 그대로** 보낸다. 덤으로 번들이 작아 콜드 스타트가 빠르다 |
-| 모델 | **`claude-sonnet-4`** (환경 변수 `CLAUDE_MODEL`로 교체) | 퀴즈 오답 보기의 품질이 이 서비스의 핵심 가치(§3.5). 쿼터를 아끼거나 더 빠른 응답이 필요하면 값만 **`claude-haiku-4`**로 바꾼다 |
+| 모델 | **`claude-haiku-4`** (환경 변수 `CLAUDE_MODEL`로 교체) | **Day 1 실측으로 확정.** 3,950자에 10.5초로 `claude-sonnet-4`(19~24초)의 절반이고 검증도 통과했다. 품질을 올리려면 값만 `claude-sonnet-4`로 바꾼다 |
 | 요청 필드 | **`model`·`max_tokens`·`system`·`messages` 넷만 보낸다** | 규격에 있는 것이 이 넷이다. `temperature`·`thinking`·`output_config`는 보내지 않는다 (§6.3) |
 | JSON 강제 방식 | **프롬프트 기반 + 코드블록 벗기기 + 1회 재시도** | 규격에 구조화 출력(`output_config`)이 없다. **A1-2·A2-1에서 쓰던 방식 그대로**라 학습이 이어진다 (§6.3) |
 | 페이지 구성 | **단일 `index.html` + 해시 라우팅 4개 섹션** | 헤더·네비를 4개 파일에 복붙하지 않아도 되고, 네비 활성화 처리가 **JS의 역할**을 보여주는 실습이 됨 (§3.3) |
@@ -76,7 +76,7 @@
 | Python 버전 | **3.12(기본)** / 3.13 / 3.14 | `.python-version` 파일로 고정 |
 | 의존성 | `requirements.txt` | **`requests`만** 넣는다 (`anthropic` SDK 미사용) |
 | 프리셋 우선순위 | **프레임워크 프리셋이 감지되면 `/api` 파일은 함수가 되지 않는다** | `requirements.txt`에 `fastapi`/`flask`/`django`를 **절대 넣지 않는다** |
-| 함수 최대 실행 시간 (Hobby) | 기본 **300초**, 최대 300초 (Fluid compute 기본 활성) | 우리는 `vercel.json`에서 **70초**로 낮춰 잡는다 (§8.3) |
+| 함수 최대 실행 시간 (Hobby) | 기본 **300초**, 최대 300초 (Fluid compute 기본 활성) | 우리는 `vercel.json`에서 **100초**로 잡는다 (§8.3) |
 | `maxDuration` 설정 위치 | Python은 코드가 아니라 **`vercel.json`의 `functions`** | Node처럼 `export const maxDuration`은 통하지 않음 |
 ### 1.3 교육용 API 엔드포인트 (확정 규격)
 
@@ -98,7 +98,7 @@ response = requests.post(
         "system": "당신은 친절한 학습 도우미입니다.",   # ★ messages가 아니라 최상위 필드 ★
         "messages": [{"role": "user", "content": "안녕하세요"}],
     },
-    timeout=25,
+    timeout=40,
 )
 print(response.json()["content"][0]["text"])    # OpenAI의 choices[0].message.content 와 위치가 다르다
 ```
@@ -296,7 +296,7 @@ print(response.json()["content"][0]["text"])    # OpenAI의 choices[0].message.c
        │        method: 'POST',
        │        headers: {'Content-Type': 'application/json'},
        │        body: JSON.stringify({ note, category, level }),
-       │        signal: AbortSignal.timeout(60000)     ← 지연 대비
+       │        signal: AbortSignal.timeout(90000)     ← 지연 대비
        │    })
        │
        │  ※ 같은 도메인이므로 절대 URL도 CORS 설정도 필요 없다
@@ -700,7 +700,7 @@ resp = requests.post(
         "system": SYSTEM_PROMPT,              # ★ 최상위 필드 ★
         "messages": [{"role": "user", "content": user_prompt}],
     },
-    timeout=25,                               # (§8.3 타임아웃 사다리)
+    timeout=40,                               # (§8.3 타임아웃 사다리 — 실측 반영)
 )
 ```
 
@@ -827,7 +827,7 @@ def validate(data: dict) -> str | None:
 | 요청 | `{"note": "...", "category": "IT", "level": "보통"}` |
 | 성공 | `200` + `{"ok": true, "data": {...}, "meta": {...}}` |
 | 실패 | `4xx/5xx` + `{"ok": false, "code": "...", "message": "..."}` |
-| 타임아웃 | `requests.post(..., timeout=25)` — 자동 재시도 없음 (§8.3) |
+| 타임아웃 | `requests.post(..., timeout=40)` — 자동 재시도 없음 (§8.3) |
 
 ### 7.2 `POST /api/feedback` (보너스 B)
 
@@ -948,14 +948,19 @@ class handler(BaseHTTPRequestHandler):        # ★ 소문자 handler ★
 ### 8.3 타임아웃 사다리 (안쪽이 항상 더 짧다)
 
 ```
- requests.post(timeout=25)                      1회 호출 = 최대 25초
-   └ JSON 파싱 실패 시 1회 재호출 (§6.4 3단계)   → 최악 50초
+ requests.post(timeout=40)                      1회 호출 = 최대 40초
+   └ JSON 파싱 실패 시 1회 재호출 (§6.4 3단계)   → 최악 80초
         └──────────────────────────────┐
- 프론트 AbortController      60초       │ ← 서버가 먼저 실패해서 "친절한 JSON"을 주도록
+ 프론트 AbortController      90초       │ ← 서버가 먼저 실패해서 "친절한 JSON"을 주도록
         └──────────────────────────────┤
- Vercel maxDuration          70초       │ ← 마지막 안전망. 여기 걸리면 응답이 JSON이 아님
+ Vercel maxDuration         100초       │ ← 마지막 안전망. 여기 걸리면 응답이 JSON이 아님
         └──────────────────────────────┘
 ```
+
+> **이 숫자는 Day 1 실측에서 나왔습니다 (2026-08-26).** 3,950자 노트 기준
+> `claude-haiku-4` **10.5초** / `claude-sonnet-4` **19~24초(편차 큼)**.
+> 처음 잡았던 25초는 sonnet이 간헐적으로 넘겨서 **40초로 올렸고**, 바깥 두 층도 함께 밀었습니다.
+> Hobby 플랜의 `maxDuration` 상한이 300초이므로 100초는 여유 안에 있습니다.
 
 **순서가 뒤집히면 생기는 일**: 프론트가 20초에 끊으면, 서버는 25초에 성공한 응답을
 **아무도 안 받는 곳으로** 보냅니다. 사용자는 실패로 보는데 **쿼터는 소모됩니다.**
@@ -966,8 +971,8 @@ class handler(BaseHTTPRequestHandler):        # ★ 소문자 handler ★
 > **재호출은 §6.4 3단계(파싱 실패)에서만 1회입니다.** 타임아웃·5xx는 재시도하지 않고
 > 바로 사용자에게 안내합니다 (같은 이유로 또 실패할 가능성이 높고, 대기만 2배가 됩니다).
 
-> `requests`의 `timeout=25`는 **연결과 응답 각각**에 적용됩니다.
-> 더 엄밀히 하려면 `timeout=(5, 25)` — 연결 5초, 읽기 25초 — 처럼 튜플로 줍니다.
+> `requests`의 `timeout=40`은 **연결과 응답 각각**에 적용됩니다.
+> 우리는 `timeout=(5, 40)` — 연결 5초, 읽기 40초 — 로 나눠 줬습니다.
 
 ### 8.4 사용자 안내 문구표 (`js/api.js`의 `MESSAGES`)
 
@@ -1096,9 +1101,9 @@ vercel env pull .env.local     # Vercel에 넣어둔 값을 그대로 내려받�
 
 | 항목 | 예상 | Day 4 실측 |
 |------|------|-----------|
-| 입력 토큰 (노트 4,000자 + system) | 약 3,000~4,500 | ______ |
-| 출력 토큰 (요약+용어+퀴즈 JSON) | 약 1,500 | ______ |
-| 응답 시간 (`claude-sonnet-4`) | 약 8~15초 | ______ |
+| 입력 토큰 (노트 3,950자 + system) | 약 3,000~4,500 | **4,301** ✅ |
+| 출력 토큰 (요약+용어+퀴즈 JSON) | 약 1,500 | **1,255~1,669** ✅ |
+| 응답 시간 | 약 8~15초 | **haiku 10.5초 / sonnet 19~24초** ⚠️ 예상보다 느렸다 |
 
 > 매 응답의 `usage`를 `meta`에 담아 내려보내고 Vercel 로그에 찍습니다 (§4.4).
 > **쿼터가 얼마나 남았는지는 실제 소비량을 봐야 알 수 있습니다.**
@@ -1233,7 +1238,7 @@ vercel env pull .env.local     # Vercel에 넣어둔 값을 그대로 내려받�
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/*.py": { "maxDuration": 70 }
+    "api/*.py": { "maxDuration": 100 }
   }
 }
 ```
@@ -1808,7 +1813,7 @@ STATUS = {
 ANTHROPIC_API_KEY=
 
 # --- 선택 ---
-# 기본: claude-sonnet-4   / 더 빠르게·쿼터를 아끼려면: claude-haiku-4
+# 기본: claude-haiku-4 (실측 10.5초)  /  품질을 올리려면: claude-sonnet-4 (19~24초)
 CLAUDE_MODEL=
 
 # 엔드포인트가 바뀔 때만. 기본: https://copa.codyssey.kr/v1/messages

@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | 항목 | 확정 | PRD |
 |------|------|-----|
 | AI API | **교육용 게이트웨이** `https://copa.codyssey.kr/v1/messages` — **`requests`로 직접 호출** (`anthropic` SDK 미사용) | §0, §1.3 |
-| 모델 | `claude-sonnet-4` (env `CLAUDE_MODEL`로 교체, 대안 `claude-haiku-4`) | §0, §9.5 |
+| 모델 | **`claude-haiku-4`** (env `CLAUDE_MODEL`로 교체, 대안 `claude-sonnet-4`) — Day 1 실측으로 확정 | §0, §9.6 |
 | 프론트 | **바닐라 HTML/CSS/JS.** 프레임워크·빌드 도구 없음 (과제 제약) | §0 |
 | 페이지 구성 | **단일 `index.html` + 해시 라우팅 4개 섹션** (홈/되새김/내 기록/가이드·문의) | §3.3 |
 | 백엔드 | **`api/*.py` 파일 기반 함수** — `class handler(BaseHTTPRequestHandler)` | §4.4, §7.5 |
@@ -56,10 +56,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 requests.post(
     "https://copa.codyssey.kr/v1/messages",
     headers={"x-api-key": KEY, "anthropic-version": "2023-06-01"},
-    json={"model": "claude-sonnet-4", "max_tokens": 4096,
+    json={"model": "claude-haiku-4", "max_tokens": 4096,
           "system": SYSTEM_PROMPT,                       # ★ 최상위 필드 ★
           "messages": [{"role": "user", "content": user_prompt}]},
-    timeout=25,
+    timeout=(5, 40),
 )
 # 응답: data["content"][0]["text"]   (OpenAI의 choices[0].message.content 가 아니다)
 ```
@@ -104,10 +104,14 @@ A1-2·A2-1은 **Gemini SDK**를 썼습니다. 그 습관도, OpenAI 습관도 �
 **타임아웃 사다리 — 순서를 바꾸지 말 것 (PRD §8.3)**
 
 ```
-requests.post(timeout=25)  × (파싱 실패 재호출 1회) ≈ 최악 50초
-프론트 AbortController                                60초
-Vercel maxDuration                                    70초
+requests.post(timeout=40)  × (파싱 실패 재호출 1회) ≈ 최악 80초
+프론트 AbortController                                90초
+Vercel maxDuration                                   100초
 ```
+
+**이 숫자를 낮추지 마십시오 — 실측에서 나왔습니다.** 3,950자 노트 기준
+`claude-haiku-4` 10.5초 / `claude-sonnet-4` 19~24초(편차 큼).
+처음 잡았던 25초는 sonnet이 간헐적으로 넘겼습니다.
 
 바깥쪽이 항상 더 길어야 합니다. 프론트가 먼저 끊으면 서버는 **아무도 안 받는 곳으로**
 성공 응답을 보내고, 사용자는 실패로 보는데 **쿼터는 소모됩니다.**
@@ -228,14 +232,21 @@ CSS·JS가 옛날 것  → 강력 새로고침(Ctrl+Shift+R)
 > 아직 비어 있습니다. **실제로 호출·배포해 확인한 사실만** 여기에 적습니다.
 > 추측은 적지 않습니다. 아래는 채워야 할 자리입니다.
 
-**Day 1 — 교육용 게이트웨이 (§1.3). 여기가 가장 먼저 채워져야 합니다.**
+**Day 1 — 교육용 게이트웨이 (§1.3). 2026-08-26 실호출로 확인 완료.**
 
-- [ ] `claude-sonnet-4` 호출이 200을 반환하는가?
-- [ ] `claude-haiku-4` 호출이 200을 반환하는가? (한쪽만 열려 있을 수 있다 → 열린 쪽을 기본값으로)
-- [ ] **키를 틀렸을 때** 오는 상태 코드와 body 모양은? → PRD §7.4 매핑을 이 관찰로 확정
-- [ ] 쿼터 초과 시 오는 상태 코드는? (429인가, 다른 코드인가)
-- [ ] 응답에 `usage`가 실제로 들어오는가? 필드 이름은 `input_tokens`/`output_tokens`인가?
-- [ ] `stop_reason` 필드가 오는가? 어떤 값들이 오는가?
+- [x] **두 모델 모두 200.** 게이트웨이가 별칭을 실제 모델로 매핑한다:
+      `claude-sonnet-4` → `claude-sonnet-4-6` / `claude-haiku-4` → `claude-haiku-4-5-20251001`
+      **응답의 `model` 필드는 우리가 보낸 값과 다릅니다.** 로그를 볼 때 헷갈리지 마십시오.
+- [x] **틀린 키 → `401`** + `{"type":"error","error":{"type":"authentication_error",...}}`
+      → `UPSTREAM_AUTH` 매핑이 맞다.
+- [x] **`usage`는 `input_tokens` / `output_tokens`** 로 온다 (그 밖에 `cache_creation`,
+      `cache_read_input_tokens`, `service_tier`, `inference_geo` 도 함께 온다).
+- [x] **`stop_reason`**: `end_turn`, `max_tokens` 관찰됨. `stop_details` 필드도 함께 온다.
+- [x] **최상위 `system` 필드가 동작한다** — 지시대로 정확히 `'학습코치'`만 반환.
+- [x] **응답 시간 (3,950자)**: `claude-haiku-4` **10.5초** / `claude-sonnet-4` **19~24초**.
+      → 타임아웃을 25→40초로 올리고 **기본 모델을 haiku로 확정**했다.
+- [x] **토큰 (3,950자)**: in=4,301 / out=1,255(sonnet)~1,669(haiku)
+- [ ] 쿼터 초과 시 오는 상태 코드는? (아직 도달 안 함. 429로 가정하고 매핑해 둠)
 
 **Day 2 — Vercel**
 
@@ -246,8 +257,8 @@ CSS·JS가 옛날 것  → 강력 새로고침(Ctrl+Shift+R)
 
 **Day 4~5 — 실측치**
 
-- [ ] 노트 4,000자 기준 실제 응답 시간. **25초 타임아웃이 충분한가?**
-- [ ] 실제 `input_tokens` / `output_tokens` → PRD §9.5 표를 채운다
+- [x] 노트 4,000자 기준 실제 응답 시간 → **25초로는 부족했다.** 40초로 올림.
+- [x] 실제 `input_tokens` / `output_tokens` → PRD §9.6 표를 채웠다
 - [ ] JSON 파싱이 1차에서 실패하는 빈도 (10회 중 몇 회) — 재시도 1회로 충분한가?
 - [ ] `answer not in options` 검증이 걸리는 빈도 (10회 중 몇 회)
 - [ ] 코드블록(```` ```json ````)을 붙여 오는 빈도 — `strip_fence`가 실제로 필요한가?

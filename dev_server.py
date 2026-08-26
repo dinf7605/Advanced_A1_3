@@ -47,9 +47,10 @@ def load_env_local() -> None:
     for key in MANAGED_KEYS:                        # 먼저 비운다
         os.environ.pop(key, None)
 
-    path = ROOT / ".env.local"
-    if not path.exists():
-        print("⚠️  .env.local 이 없습니다. AI 기능은 NO_API_KEY 로 실패합니다.")
+    # .env.local 을 먼저, 없으면 .env 를 읽는다. 둘 다 .gitignore 에 있다.
+    path = next((ROOT / n for n in (".env.local", ".env") if (ROOT / n).exists()), None)
+    if path is None:
+        print("⚠️  .env.local(또는 .env) 이 없습니다. AI 기능은 NO_API_KEY 로 실패합니다.")
         print("    cp .env.example .env.local  후 키를 채우세요.")
         print("    (셸에 남아 있는 키를 대신 쓰지 않습니다 — 의도된 동작입니다.)\n")
         return
@@ -66,7 +67,7 @@ def load_env_local() -> None:
             loaded.append(key)
 
     # ★ 값이 아니라 "이름"만 출력한다 ★ 로그도 유출 경로다 (PRD §9.4)
-    print(f"   .env.local 에서 읽음: {', '.join(loaded) or '(없음)'}")
+    print(f"   {path.name} 에서 읽음: {', '.join(loaded) or '(없음)'}")
 
 
 def load_handler(name: str):

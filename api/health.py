@@ -34,7 +34,7 @@ class handler(BaseHTTPRequestHandler):  # ★ 소문자 handler — 대문자면
             "requests": requests_version,
             # 존재 여부만. 값도, 앞자리도 넣지 않는다.
             "has_api_key": bool(os.environ.get("ANTHROPIC_API_KEY")),
-            "model": os.environ.get("CLAUDE_MODEL", "claude-sonnet-4"),
+            "model": os.environ.get("CLAUDE_MODEL", "claude-haiku-4"),
             # URL 자체가 아니라 "기본값을 쓰는지"만 알린다.
             "custom_api_url": api_url != DEFAULT_API_URL,
             "webhook_configured": bool(os.environ.get("WEBHOOK_URL")),

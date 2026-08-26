@@ -48,7 +48,7 @@
 | 라우팅 | 해시 라우팅 (`#/study`) | 단일 `index.html` + 4개 `<section>` |
 | 백엔드 | **Vercel Serverless Functions (Python 3.12)** | `api/*.py`, `BaseHTTPRequestHandler` |
 | HTTP 클라이언트 | `requests` | 교육용 게이트웨이 규격에 맞춘 직접 호출 |
-| AI | **Claude** (`claude-sonnet-4`) | 교육용 게이트웨이 `copa.codyssey.kr` |
+| AI | **Claude** (`claude-haiku-4`) | 교육용 게이트웨이 `copa.codyssey.kr` |
 | 저장소 | `localStorage` | 로그인이 없으므로 서버에 저장하지 않음 |
 | 배포 | GitHub → Vercel 자동 배포 | |
 
@@ -67,7 +67,7 @@
 ├─ docs/               기획서 · 스크린샷 · AI 도구 사용 로그
 ├─ dev_server.py       로컬 전용. Vercel이 해 주는 일을 흉내 낸다
 ├─ requirements.txt    requests 만
-└─ vercel.json         함수 maxDuration 70초
+└─ vercel.json         함수 maxDuration 100초
 ```
 
 ---
@@ -90,7 +90,7 @@ cp .env.example .env.local
 | 이름 | 필수 | 기본값 | 설명 |
 |------|:----:|--------|------|
 | `ANTHROPIC_API_KEY` | ✅ | — | 교육용 virtual key. `x-api-key` 헤더로 전송 |
-| `CLAUDE_MODEL` | — | `claude-sonnet-4` | 대안: `claude-haiku-4` (더 빠르고 쿼터 절약) |
+| `CLAUDE_MODEL` | — | `claude-haiku-4` | 실측 10.5초. 품질을 올리려면 `claude-sonnet-4` (19~24초) |
 | `COPA_API_URL` | — | `https://copa.codyssey.kr/v1/messages` | 엔드포인트가 바뀔 때만 |
 | `WEBHOOK_URL` | — | 없음 | 문의 폼 전달 대상. **URL 자체가 비밀** |
 | `RATE_LIMIT_PER_MIN` | — | `5` | IP별 분당 허용 호출 수 |
@@ -213,13 +213,18 @@ CSS·JS가 옛날 것  →  강력 새로고침 (Ctrl+Shift+R)
 ### 5-6. 타임아웃 사다리 — 바깥쪽이 항상 더 길다
 
 ```
-requests.post(timeout=25) × (파싱 실패 재호출 1회)  ≈ 최악 50초
-프론트 AbortController                                60초
-Vercel maxDuration                                    70초
+requests.post(timeout=40) × (파싱 실패 재호출 1회)  ≈ 최악 80초
+프론트 AbortController                                90초
+Vercel maxDuration                                   100초
 ```
 
 프론트가 먼저 끊으면 서버는 **아무도 안 받는 곳으로** 성공 응답을 보냅니다.
 사용자는 실패로 보는데 쿼터는 소모됩니다. 그래서 순서를 바꾸면 안 됩니다.
+
+**숫자는 실측에서 나왔습니다.** 3,950자 노트 기준 `claude-haiku-4` 10.5초,
+`claude-sonnet-4` 19~24초(편차 큼). 처음 잡았던 25초로는 sonnet이 간헐적으로
+타임아웃에 걸려서 40초로 올렸고, 바깥 두 층도 함께 밀었습니다.
+기본 모델을 haiku로 둔 것도 같은 측정 결과입니다 — **2배 빠르고 검증도 통과**했습니다.
 
 ### 5-7. 기록을 서버에 저장하지 않는 이유
 

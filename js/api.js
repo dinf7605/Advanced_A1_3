@@ -50,13 +50,13 @@ function isRetryable(code) {
  *
  * @returns {Promise<{ok:true,data:any,meta:any} | {ok:false,code:string}>}
  */
-async function callApi(path, payload, { timeoutMs = 60000 } = {}) {
+async function callApi(path, payload, { timeoutMs = 90000 } = {}) {
   // 목업 모드면 네트워크를 타지 않는다 (PRD §12.3)
   if (typeof Mock !== "undefined" && Mock.enabled() && path === "/api/summarize") {
     return Mock.respond();
   }
 
-  // 프론트 타임아웃 60초 — 서버(25×2=50초)보다 길어야 한다 (PRD §8.3)
+  // 프론트 타임아웃 90초 — 서버(40×2=80초)보다 길어야 한다 (PRD §8.3)
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
