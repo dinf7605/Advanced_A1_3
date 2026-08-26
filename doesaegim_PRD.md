@@ -869,6 +869,7 @@ def validate(data: dict) -> str | None:
 | `UPSTREAM_ERROR` | 502 | Claude 5xx 및 그 밖의 API 오류 |
 | `INVALID_AI_OUTPUT` | 502 | §6.4 검증 실패 |
 | `AI_REFUSED` | 422 | `stop_reason == "refusal"` |
+| `BAD_CONFIG` | 500 | `CLAUDE_MODEL`·`COPA_API_URL`이 **빈 값**으로 등록됨 (§12.4) |
 | `INTERNAL` | 500 | 위 어디에도 안 걸린 예외 |
 
 ### 7.5 Vercel Python 함수 골격

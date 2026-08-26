@@ -5,7 +5,7 @@
 
 2026년 AI활용학습 **A1-3** 과제 · 김재민
 
-**배포 URL** — `https://<프로젝트명>.vercel.app` *(배포 후 이 줄을 실제 주소로 교체)*
+**배포 URL** — <https://advanceda13.vercel.app>
 
 ---
 
@@ -144,6 +144,8 @@ python dev_server.py
                     ③ 클래스 이름이 소문자 handler 인가
 /api/... 가 500  →  /api/health 를 브라우저에서 열어본다
                     has_api_key: false  → 환경 변수 미설정 또는 재배포 누락
+                    model: ""           → CLAUDE_MODEL 이 "빈 값"으로 등록돼 있다
+                    custom_api_url:true → COPA_API_URL 이 비어 있거나 잘못됐다
                     true 인데 500       → Vercel Runtime Logs 확인
 로컬은 되는데 배포만 →  환경 변수 / 패키지 / 파일명 대소문자
                     (Vercel은 Linux — Windows와 달리 대소문자를 구분한다)

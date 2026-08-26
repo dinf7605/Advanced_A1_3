@@ -19,8 +19,12 @@ import requests
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _shared import client_ip, fail, json_response, rate_limited, read_json_body  # noqa: E402
 
-API_URL = os.environ.get("COPA_API_URL", "https://copa.codyssey.kr/v1/messages")
-MODEL = os.environ.get("CLAUDE_MODEL", "claude-haiku-4")
+# ★ .get(키, 기본값) 이 아니라 .get(키) or 기본값 ★
+#   Vercel 대시보드에서 변수 이름만 만들고 값을 비워 두면 키가 "존재하되 빈 문자열"이 된다.
+#   .get(키, 기본값) 은 키가 "없을 때만" 기본값을 쓰므로 "" 가 그대로 흘러 들어간다.
+#   실제로 배포 후 model="" 로 나가 호출이 즉시 실패했다. (2026-08-26)
+API_URL = os.environ.get("COPA_API_URL") or "https://copa.codyssey.kr/v1/messages"
+MODEL = os.environ.get("CLAUDE_MODEL") or "claude-haiku-4"
 MIN_LEN, MAX_LEN = 100, 4000
 TIMEOUT = 40  # 초 (PRD §8.3 타임아웃 사다리: 40×2 < 90(프론트) < 100(Vercel))
 #  실측(3,950자): claude-haiku-4 10.5초 / claude-sonnet-4 19~24초.
@@ -99,6 +103,13 @@ def call_claude(user_prompt: str) -> tuple[dict | None, str | None]:
         )
     except requests.exceptions.Timeout:
         return None, "UPSTREAM_TIMEOUT"
+    except (requests.exceptions.MissingSchema,
+            requests.exceptions.InvalidURL,
+            requests.exceptions.InvalidSchema):
+        # 네트워크 문제가 아니라 "설정이 틀렸다". 0.3초 만에 실패하는데
+        # UPSTREAM_TIMEOUT 으로 뭉뚱그리면 로그를 봐도 원인을 알 수 없다.
+        print("[summarize] COPA_API_URL 이 비었거나 형식이 잘못됐다 — 환경 변수 확인")
+        return None, "BAD_CONFIG"
     except requests.exceptions.RequestException:
         return None, "UPSTREAM_TIMEOUT"            # 연결 실패도 사용자에겐 같은 안내
 
@@ -209,6 +220,10 @@ class handler(BaseHTTPRequestHandler):  # ★ 소문자 handler ★
             return fail(self, "RATE_LIMITED")
 
         # 4) 키 확인 — 없는 걸 먼저 알면 40초 기다릴 필요가 없다
+        if not MODEL:
+            print("[summarize] CLAUDE_MODEL 이 비어 있다 — 환경 변수를 지우거나 값을 채우십시오")
+            return fail(self, "BAD_CONFIG")
+
         if not os.environ.get("ANTHROPIC_API_KEY"):
             print("[summarize] ANTHROPIC_API_KEY 미설정 — Vercel 환경 변수를 확인하고 재배포")
             return fail(self, "NO_API_KEY")

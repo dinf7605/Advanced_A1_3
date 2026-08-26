@@ -20,7 +20,7 @@ DEFAULT_API_URL = "https://copa.codyssey.kr/v1/messages"
 class handler(BaseHTTPRequestHandler):  # ★ 소문자 handler — 대문자면 404 ★
 
     def do_GET(self):
-        api_url = os.environ.get("COPA_API_URL", DEFAULT_API_URL)
+        api_url = os.environ.get("COPA_API_URL") or DEFAULT_API_URL
         try:
             import requests
 
@@ -34,7 +34,7 @@ class handler(BaseHTTPRequestHandler):  # ★ 소문자 handler — 대문자면
             "requests": requests_version,
             # 존재 여부만. 값도, 앞자리도 넣지 않는다.
             "has_api_key": bool(os.environ.get("ANTHROPIC_API_KEY")),
-            "model": os.environ.get("CLAUDE_MODEL", "claude-haiku-4"),
+            "model": os.environ.get("CLAUDE_MODEL") or "claude-haiku-4",
             # URL 자체가 아니라 "기본값을 쓰는지"만 알린다.
             "custom_api_url": api_url != DEFAULT_API_URL,
             "webhook_configured": bool(os.environ.get("WEBHOOK_URL")),

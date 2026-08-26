@@ -21,6 +21,7 @@ const MESSAGES = {
   UPSTREAM_ERROR:        "지금은 되새김이 잠시 쉬고 있어요. 잠시 후 다시 시도해 주세요.",
   UPSTREAM_AUTH:         "지금은 되새김이 잠시 쉬고 있어요. 잠시 후 다시 시도해 주세요.",
   NO_API_KEY:            "지금은 되새김이 잠시 쉬고 있어요. 잠시 후 다시 시도해 주세요.",
+  BAD_CONFIG:            "지금은 되새김이 잠시 쉬고 있어요. 잠시 후 다시 시도해 주세요.",
   INTERNAL:              "지금은 되새김이 잠시 쉬고 있어요. 잠시 후 다시 시도해 주세요.",
   INVALID_AI_OUTPUT:     "결과를 다듬는 데 실패했어요. 한 번 더 시도하면 대개 잘 나와요.",
   AI_REFUSED:            "이 내용으로는 퀴즈를 만들기 어려워요. 다른 노트로 시도해 주세요.",
@@ -33,7 +34,8 @@ const MESSAGES = {
 /* 이 코드들은 "다시 시도" 버튼을 보여준다 */
 const RETRYABLE = new Set([
   "RATE_LIMITED", "UPSTREAM_RATE_LIMITED", "UPSTREAM_TIMEOUT", "CLIENT_TIMEOUT",
-  "UPSTREAM_ERROR", "UPSTREAM_AUTH", "NO_API_KEY", "INTERNAL", "INVALID_AI_OUTPUT", "OFFLINE"
+  "UPSTREAM_ERROR", "UPSTREAM_AUTH", "NO_API_KEY", "BAD_CONFIG", "INTERNAL",
+  "INVALID_AI_OUTPUT", "OFFLINE"
 ]);
 
 function messageFor(code) {
