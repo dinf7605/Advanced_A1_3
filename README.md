@@ -245,12 +245,47 @@ IP별 분당 제한은 **인스턴스 메모리 기반이라 완벽하지 않습
 
 ## 6. 스크린샷
 
-*(Day 7에 `docs/screenshots/`의 이미지를 여기에 삽입합니다)*
+### 데스크톱
 
-| | |
+**홈** — 히어로 · 3단계 사용법
+
+![홈 화면](docs/screenshots/01_home_desktop.png)
+
+**입력** — 과목·난이도 선택, 실시간 글자 카운터(`501 / 4,000자`)
+
+![노트 입력](docs/screenshots/02_study_input_desktop.png)
+
+**로딩** — 스켈레톤 카드 + 예상 시간 안내. 버튼은 스피너와 함께 비활성화됩니다.
+
+![로딩 중](docs/screenshots/03_study_loading.png)
+
+### ⭐ AI 기능 — 입력에서 결과까지
+
+**결과** — 주제 · 요약 3줄 · 핵심 용어 5개
+
+![AI 결과](docs/screenshots/04_study_result_desktop.png)
+
+**채점** — 점수 + ✅/❌ + 해설. 해설은 **채점 전에는 화면에 없습니다.**
+
+![퀴즈 채점](docs/screenshots/05_quiz_graded.png)
+
+### 모바일 (375 × 812)
+
+| 홈 | AI 결과 |
 |---|---|
-| 홈 (데스크톱) | 되새김 결과 |
-| 모바일 | 다크 모드 |
+| ![모바일 홈](docs/screenshots/06_home_mobile.png) | ![모바일 결과](docs/screenshots/07_study_result_mobile.png) |
+
+1열 레이아웃 · 햄버거 메뉴 · 가로 스크롤 0px.
+
+### 실패 처리 · 부가 기능
+
+**타임아웃 안내** — 사용자가 **할 수 있는 행동**을 알려주고 [다시 시도]를 제공합니다.
+
+![실패 안내](docs/screenshots/08_error_timeout.png)
+
+| 다크 모드 (보너스 A) | 내 기록 (보너스 B) |
+|---|---|
+| ![다크 모드](docs/screenshots/09_dark_mode.png) | ![내 기록](docs/screenshots/10_history.png) |
 
 ---
 
