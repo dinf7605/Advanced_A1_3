@@ -85,7 +85,7 @@ function startCooldown() {
 }
 
 /* ── 결과 렌더 (내 기록의 '보기'에서도 재사용한다) ───────────── */
-function renderResult(data) {
+function renderResult(data, { fromCache = false } = {}) {
   const root = document.getElementById("result");
   root.textContent = "";
   document.getElementById("error-box").hidden = true;
@@ -112,6 +112,13 @@ function renderResult(data) {
   const topic = document.createElement("h2");
   topic.textContent = data.topic || "요약 결과";
   headRow.append(topic);
+  // 캐시에서 왔다면 숨기지 않고 알린다 — 사용자가 "왜 즉시 나왔지?" 하지 않도록
+  if (fromCache) {
+    const badge = document.createElement("span");
+    badge.className = "badge";
+    badge.textContent = "저장된 결과";
+    headRow.append(badge);
+  }
   head.append(headRow);
 
   /* 요약 */
@@ -202,13 +209,19 @@ function renderResult(data) {
   copyBtn.textContent = "Markdown 복사";
   copyBtn.addEventListener("click", () => copyAsMarkdown(data));
 
+  // 캐시에서 온 결과라면 "새로 만들기" — 캐시를 건너뛰고 다시 호출한다.
+  // 그렇지 않으면 입력창으로 돌아가 새 노트를 받는다.
   const againBtn = document.createElement("button");
   againBtn.type = "button";
   againBtn.className = "btn btn-ghost";
-  againBtn.textContent = "다시 만들기";
+  againBtn.textContent = fromCache ? "새로 만들기" : "다시 만들기";
   againBtn.addEventListener("click", () => {
-    root.textContent = "";
-    document.getElementById("note").focus();
+    if (fromCache) {
+      submitNote({ force: true });     // 같은 노트로 새 결과를 받는다
+    } else {
+      root.textContent = "";
+      document.getElementById("note").focus();
+    }
   });
 
   wrap.append(copyBtn, againBtn);
@@ -285,7 +298,7 @@ async function copyAsMarkdown(data) {
 }
 
 /* ── 제출 ────────────────────────────────────────────────────── */
-async function submitNote() {
+async function submitNote({ force = false } = {}) {
   const note = document.getElementById("note").value;
   const errorEl = document.getElementById("note-error");
 
@@ -302,17 +315,28 @@ async function submitNote() {
   const category = document.getElementById("category").value;
   const level = document.querySelector('input[name="level"]:checked').value;
 
+  // ★ 캐시 적중이면 호출하지 않는다 ★ 10초 → 즉시, 쿼터 소비 0 (PRD §12.5)
+  //   [새로 만들기]로 누른 경우(force)는 건너뛴다 — 다른 결과를 원한 것이므로.
+  if (!force) {
+    const hit = findCached(note, category, level);
+    if (hit) {
+      renderResult(hit.data, { fromCache: true });
+      console.info("[되새김] 캐시 적중 — API를 호출하지 않았습니다.");
+      return;
+    }
+  }
+
   setLoading(true);
   const res = await callApi("/api/summarize", { note: note.trim(), category, level });
   setLoading(false);
 
   if (!res.ok) {
-    showError(res.code, { onRetry: submitNote });
+    showError(res.code, { onRetry: () => submitNote({ force }) });
     return;
   }
 
   renderResult(res.data);
-  saveResult(res.data, res.meta);
+  saveResult(res.data, res.meta, fingerprint(note, category, level));
   startCooldown();
 
   // 쿼터 소비를 눈으로 보기 위한 값 — 화면이 아니라 콘솔에만 (PRD §9.6)

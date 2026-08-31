@@ -22,12 +22,35 @@ function writeAll(items) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(items));
 }
 
-function saveResult(data, meta) {
+/* ── 캐시 (PRD §12.5 응답 지연 개선) ──────────────────────────────
+   같은 노트 + 같은 과목 + 같은 난이도면 결과도 같습니다.
+   기록이 이미 localStorage에 있으므로, 입력 지문(fingerprint)만 함께 저장하면
+   **재요청 자체를 없앨 수 있습니다.** 10초 → 0초, 쿼터 소비 0.
+
+   실측(2026-08-31): 응답 시간 ≈ 출력 토큰 × 약 6.7ms.
+   출력 분량이 고정이라 프롬프트를 줄여도 지연이 줄지 않습니다.
+   그래서 이 서비스에서 지연을 실제로 줄이는 방법은 **호출을 안 하는 것**뿐입니다. */
+function fingerprint(note, category, level) {
+  // 암호용이 아니라 캐시 키용이다. 충돌해도 길이가 함께 걸러준다.
+  const s = `${category}|${level}|${note.trim()}`;
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return `${s.length}-${(h >>> 0).toString(36)}`;
+}
+
+/** 같은 입력의 이전 결과를 찾는다. 없으면 null. */
+function findCached(note, category, level) {
+  const fp = fingerprint(note, category, level);
+  return listResults().find((it) => it.fp === fp) || null;
+}
+
+function saveResult(data, meta, fp) {
   const item = {
     id: String(Date.now()),
     created_at: new Date().toISOString(),
     category: (meta && meta.category) || "일반",
     level: (meta && meta.level) || "보통",
+    fp: fp || null,
     data
   };
   let items = [item, ...listResults()].slice(0, HISTORY_MAX);
@@ -106,7 +129,8 @@ function renderHistory() {
     viewBtn.className = "btn btn-secondary btn-sm";
     viewBtn.textContent = "보기";
     viewBtn.addEventListener("click", () => {
-      renderResult(item.data);           // study.js의 렌더 함수를 재사용한다
+      // study.js의 렌더 함수를 재사용한다. 기록에서 연 것도 '저장된 결과'다.
+      renderResult(item.data, { fromCache: true });
       navigateTo("#/study");
     });
 
