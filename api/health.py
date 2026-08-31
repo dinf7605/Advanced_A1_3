@@ -37,7 +37,6 @@ class handler(BaseHTTPRequestHandler):  # ★ 소문자 handler — 대문자면
             "model": os.environ.get("CLAUDE_MODEL") or "claude-haiku-4",
             # URL 자체가 아니라 "기본값을 쓰는지"만 알린다.
             "custom_api_url": api_url != DEFAULT_API_URL,
-            "webhook_configured": bool(os.environ.get("WEBHOOK_URL")),
         })
 
     def do_POST(self):

@@ -8,7 +8,6 @@
     정적 파일        index.html, css/, js/, images/  →  그대로 서빙
     api/summarize.py →  /api/summarize
     api/health.py    →  /api/health
-    api/feedback.py  →  /api/feedback
 
 ★ 이것은 로컬 편의 도구입니다. 배포 환경에서는 실행되지 않습니다. ★
    Vercel은 `api/*.py` 를 각각 독립된 서버리스 함수로 띄우고, 이 파일은 쓰지 않습니다.
@@ -31,7 +30,7 @@ PORT = int(os.environ.get("PORT", 8000))
 
 # 이 파일이 관리하는 환경 변수. 여기 없는 이름은 건드리지 않는다.
 MANAGED_KEYS = ("ANTHROPIC_API_KEY", "CLAUDE_MODEL", "COPA_API_URL",
-                "WEBHOOK_URL", "RATE_LIMIT_PER_MIN")
+                "RATE_LIMIT_PER_MIN")
 
 
 def load_env_local() -> None:

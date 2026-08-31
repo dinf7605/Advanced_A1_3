@@ -247,29 +247,19 @@
     </details>
 
     <h2 class="section-title">문의</h2>
-    <form class="card" id="feedback-form" novalidate>
-      <div class="field-row">
-        <div class="field">
-          <label for="fb-name">이름</label>
-          <input type="text" id="fb-name" name="name" maxlength="40" autocomplete="name">
-        </div>
-        <div class="field">
-          <label for="fb-email">이메일</label>
-          <input type="email" id="fb-email" name="email" maxlength="40" autocomplete="email">
-        </div>
-      </div>
-      <div class="field">
-        <label for="fb-message">내용</label>
-        <textarea id="fb-message" name="message" rows="5" maxlength="1000"
-                  placeholder="불편했던 점이나 있었으면 하는 기능을 알려주세요."></textarea>
-      </div>
-      <label class="checkbox">
-        <input type="checkbox" id="fb-include-topic">
-        <span>가장 최근에 만든 요약의 <strong>제목</strong>을 함께 보내기 (노트 원문은 보내지 않습니다)</span>
-      </label>
-      <p class="field-error" id="fb-error" role="alert" hidden></p>
-      <button type="submit" class="btn btn-primary" id="fb-submit">보내기</button>
-    </form>
+    <div class="card">
+      <p>
+        되새김은 <strong>2026 AI활용학습 A1-3 과제</strong>로 만든 학습용 프로젝트입니다.
+        따로 문의 창구를 운영하지 않고 <strong>GitHub 이슈</strong>로 받고 있어요.
+      </p>
+      <p>
+        불편했던 점, 있었으면 하는 기능, <strong>퀴즈가 이상하게 나온 사례</strong>를
+        남겨주시면 확인하겠습니다. 저장소에서 코드도 함께 보실 수 있어요.
+      </p>
+      <a class="btn btn-primary" href="https://github.com/dinf7605/Advanced_A1_3/issues"
+         target="_blank" rel="noopener">GitHub에 이슈 남기기 →</a>
+      <p class="hint">GitHub 계정이 필요합니다.</p>
+    </div>
   </section>
 
 </main>
@@ -287,6 +277,5 @@
 <script src="js/router.js"></script>
 <script src="js/history.js"></script>
 <script src="js/study.js"></script>
-<script src="js/feedback.js"></script>
 </body>
 </html>

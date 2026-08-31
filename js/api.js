@@ -3,7 +3,7 @@
    ★ callApi는 절대 예외를 던지지 않는다 ★
    항상 { ok:true, data, meta } 또는 { ok:false, code } 를 반환합니다.
    이 계약 하나가 실패 처리를 개인의 주의력이 아니라 구조로 보장합니다.
-   호출하는 쪽(study.js, feedback.js)에 try/catch가 흩어지지 않습니다.
+   호출하는 쪽(study.js)에 try/catch가 흩어지지 않습니다.
 
    ★ 화면 문구는 서버의 message가 아니라 code로 고른다 ★
    서버 문구를 그대로 쓰면 영어·내부 용어가 화면에 새어 나옵니다. */
@@ -27,7 +27,6 @@ const MESSAGES = {
   AI_REFUSED:            "이 내용으로는 퀴즈를 만들기 어려워요. 다른 노트로 시도해 주세요.",
   BAD_JSON_BODY:         "요청을 보내지 못했어요. 새로고침 후 다시 시도해 주세요.",
   METHOD_NOT_ALLOWED:    "요청을 보내지 못했어요. 새로고침 후 다시 시도해 주세요.",
-  WEBHOOK_NOT_CONFIGURED:"문의 채널이 아직 연결되지 않았어요. 저장소 이슈로 남겨주세요.",
   OFFLINE:               "인터넷 연결을 확인해 주세요."
 };
 

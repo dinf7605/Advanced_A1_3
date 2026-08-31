@@ -35,7 +35,6 @@ STATUS: dict[str, int] = {
     "UPSTREAM_ERROR": 502,
     "INVALID_AI_OUTPUT": 502,
     "AI_REFUSED": 422,
-    "WEBHOOK_NOT_CONFIGURED": 503,
     "BAD_CONFIG": 500,
     "INTERNAL": 500,
 }

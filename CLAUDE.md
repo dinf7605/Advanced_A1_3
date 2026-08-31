@@ -24,8 +24,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | 응답 방식 | **비스트리밍.** 한 번에 JSON 반환 | §0 |
 | JSON 강제 | **프롬프트 기반** + 코드블록 벗기기 + **파싱 실패 시 1회만** 재시도 (`output_config` 미사용) | §6.3, §6.4 |
 | 요청 필드 | `model`·`max_tokens`·`system`·`messages` **넷만** | §6.3 |
-| 보너스 | **A. 다크 모드 + 마이크로 인터랙션 / B. localStorage 기록 + 웹훅** 둘 다 | §10, §11 |
-| 결과 저장 | localStorage(본문 포함) + 웹훅(요약 제목만, 동의 시) — **노트 원문은 외부로 보내지 않음** | §11.3 |
+| 보너스 | **A. 다크 모드 + 마이크로 인터랙션 / B. localStorage 기록** | §10, §11 |
+| 결과 저장 | **localStorage만.** 외부 전송 없음. 문의 폼·웹훅은 §11.2 사유로 철회 | §11.1~11.3 |
 
 ## 이 과제의 핵심 규칙
 
@@ -45,6 +45,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   둘을 같이 재시도하면 응답 시간과 쿼터 소모가 2배가 됩니다.
 - **결과 렌더링에 `innerHTML`을 쓰지 않는다.** 모델 출력에 `<script>`가 섞이면 그대로 실행됩니다.
   `document.createElement` + `textContent`만 씁니다.
+- **화면에 있는데 동작하지 않는 기능을 두지 않는다.** 문의 폼을 만들었다가
+  웹훅을 연결하지 않아 눌러도 안 되는 상태였습니다. 폼을 지우고 GitHub 이슈 안내로
+  바꾸면서 `api/feedback.py`·`js/feedback.js`도 함께 지웠습니다.
+  **죽은 코드를 남겨두는 것보다 없는 편이 정직합니다** (PRD §11.2).
 - **입력을 조용히 자르지 않는다.** 4,000자를 넘으면 잘라서 보내지 말고 사용자에게 알립니다.
   자르면 뒷부분이 요약에서 빠진 이유를 사용자가 알 수 없습니다.
 - **프롬프트에 라벨만 넣지 않는다.** `과목: IT`처럼 이름만 주면 모델은 무시합니다.

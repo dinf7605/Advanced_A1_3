@@ -8,7 +8,6 @@ const MIN_LEN = 100;
 const MAX_LEN = 4000;
 const COOLDOWN_MS = 10000;    // 제출 후 10초 쿨다운 (PRD §9.6 호출 빈도 통제)
 
-let lastResult = null;        // 문의 폼에서 "제목 함께 보내기"에 쓴다
 let cooldownTimer = null;
 
 const SAMPLE_NOTE = `HTTP는 웹에서 클라이언트와 서버가 데이터를 주고받는 규칙이다.
@@ -87,7 +86,6 @@ function startCooldown() {
 
 /* ── 결과 렌더 (내 기록의 '보기'에서도 재사용한다) ───────────── */
 function renderResult(data) {
-  lastResult = data;
   const root = document.getElementById("result");
   root.textContent = "";
   document.getElementById("error-box").hidden = true;
@@ -345,7 +343,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initRouter();
   initHistory();
   initStudyForm();
-  initFeedbackForm();
 
   if (typeof Mock !== "undefined" && Mock.enabled()) {
     console.info("[되새김] 목업 모드입니다. 서버를 호출하지 않습니다.");

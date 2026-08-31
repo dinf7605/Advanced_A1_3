@@ -31,7 +31,7 @@
 | 백엔드 구조 | **`api/` 파일 기반 함수** (`class handler(BaseHTTPRequestHandler)`) | 과제가 `api/` 폴더를 명시. Vercel의 프레임워크 프리셋(FastAPI/Flask)을 쓰면 `api/` 파일이 함수로 잡히지 않으므로 **쓰지 않는다** (§4.5) |
 | 응답 방식 | **비스트리밍 (한 번에 JSON 반환)** | 스트리밍은 `BaseHTTPRequestHandler`에서 청크 전송·프론트 파서까지 따라와서, 이 과제의 학습 목표(fetch → 응답 → 화면 반영)를 흐린다. §6.3 출력은 4,096 토큰 안에 들어옴 |
 | 보너스 | **A. 다크 모드 + 마이크로 인터랙션 / B. 결과 저장 + 알림 자동화** 둘 다 채택 | §10, §11 |
-| 결과 저장 위치 | **localStorage(본문 포함) + 웹훅(요약만, 선택 동의)** | 노트 원문을 외부로 보내지 않는다 (§11.3) |
+| 결과 저장 위치 | **localStorage(본문 포함).** 외부 전송 없음 | 로그인이 없으므로 서버에 두지 않는다 (§11.1) |
 
 > ⚠️ **해시 라우팅으로 확정했으므로** 섹션 추가는 `<section id="...">` 하나와 네비 링크 하나로 끝납니다.
 > 나중에 멀티 페이지(`study.html` 등)로 바꾸려면 헤더·네비·테마 스크립트를 전부 복제해야 하므로,
@@ -161,7 +161,7 @@ print(response.json()["content"][0]["text"])    # OpenAI의 choices[0].message.c
 
 | # | 요건 | 대응 | 절 |
 |---|------|------|-----|
-| 1 | 운영 자동화 / 데이터 저장 고도화 | 문의 폼 + 요약 결과 → 외부 웹훅 전송, 최근 기록 localStorage | §11 |
+| 1 | 운영 자동화 / 데이터 저장 고도화 | **결과 저장 — localStorage 최근 10건**(열람·삭제·다시보기). 웹훅 문의 폼은 착수 후 철회 — 사유는 §11.2 | §11 |
 | 2 | UX 및 측정 고도화 | 다크 모드 + 마이크로 인터랙션(스켈레톤·버튼 상태·토스트) | §10 |
 
 ### 2.4 개발 환경 · 제약 사항 (과제 §6·§7)
@@ -172,7 +172,7 @@ print(response.json()["content"][0]["text"])    # OpenAI의 choices[0].message.c
 | 구분 | 요건 | 대응 | 절 |
 |------|------|------|-----|
 | 환경 | 프론트는 **순수 HTML/CSS/JS** (React/Vue 금지) | 프레임워크·빌드 도구 없음. `<script src>` 7개로 끝 | §0, 부록 C |
-| 환경 | 백엔드는 **Vercel Serverless Functions (Python), `api/` 폴더** | `api/summarize.py`·`feedback.py`·`health.py` | §4.2, §7 |
+| 환경 | 백엔드는 **Vercel Serverless Functions (Python), `api/` 폴더** | `api/summarize.py`·`health.py` | §4.2, §7 |
 | 환경 | AI 기능 **1개 이상** | `/api/summarize` (1개) | §6 |
 | 보안 | API 키는 **환경 변수로 관리**, 코드·README·스크린샷에 노출 금지 | `os.environ`만 사용 + 9항목 점검 **2회** | §9.1~§9.4 |
 | 보안 | **과금/쿼터 인지**, 호출 빈도와 실패 상황 고려 | 입력 4,000자 상한 + 3중 호출 제한 + `usage` 실측 | §9.6 |
@@ -246,7 +246,7 @@ print(response.json()["content"][0]["text"])    # OpenAI의 choices[0].message.c
 | 1 | **홈** | `#/` (기본) | 서비스 소개, 3단계 사용법, "지금 되새기기" CTA, 샘플 결과 미리보기 | — |
 | 2 | **되새김** | `#/study` | **AI 기능.** 노트 입력 → 요약·용어·퀴즈 출력, 퀴즈 채점 | ✅ |
 | 3 | **내 기록** | `#/history` | localStorage에 저장된 최근 10건 목록·다시보기·삭제·전체 비우기 | — |
-| 4 | **가이드 · 문의** | `#/guide` | 되새김을 잘 쓰는 법(분산 반복·인출 연습) + FAQ + 문의 폼(웹훅 전송) | — |
+| 4 | **가이드 · 문의** | `#/guide` | 되새김을 잘 쓰는 법(분산 반복·인출 연습) + FAQ + 문의 안내(GitHub 이슈) | — |
 
 **네비게이션 규칙**
 
@@ -263,7 +263,7 @@ print(response.json()["content"][0]["text"])    # OpenAI의 choices[0].message.c
 | 퀴즈 채점 | 5문항을 풀고 [채점하기] → 정오 표시 + 해설 펼침 + 점수 | `#/study` |
 | 결과 복사 | 결과 전체를 Markdown으로 클립보드 복사 | `#/study` |
 | 내 기록 | 결과를 브라우저에 자동 저장, 최근 10건 열람·삭제 | `#/history` |
-| 문의 접수 | 이름·이메일·내용 → 외부 웹훅으로 전달 (보너스) | `#/guide` |
+| 문의 안내 | GitHub 이슈 링크. **개인정보를 받지 않는다** (§11.2) | `#/guide` |
 | 다크 모드 | 시스템 설정 자동 감지 + 수동 토글 기억 (보너스) | 전역 |
 
 ### 3.5 AI 기능이 사용자에게 주는 가치
@@ -343,11 +343,9 @@ AI활용학습_A1_3/                 ← GitHub 저장소 루트 (repo: doesaegi
 │  ├─ api.js                     ← fetch 래퍼 (타임아웃 · 에러코드 → 한국어 문구)
 │  ├─ study.js                   ← AI 폼 제출 · 결과 렌더 · 퀴즈 채점
 │  ├─ history.js                 ← localStorage 기록 저장/목록/삭제
-│  ├─ feedback.js                ← 문의 폼 제출
 │  └─ mock.js                    ← 서버 없이 화면만 볼 때 쓰는 고정 응답 (§12.3)
 ├─ api/
 │  ├─ summarize.py               ← POST /api/summarize   ★ AI 기능
-│  ├─ feedback.py                ← POST /api/feedback    (보너스 B)
 │  ├─ health.py                  ← GET  /api/health      (배포 진단용)
 │  └─ _shared.py                 ← 공용 헬퍼 (밑줄로 시작 → 함수로 안 잡힘)
 ├─ images/                        ← 과제 요건 2의 명시 폴더. 실제로 쓰이게 한다
@@ -400,12 +398,10 @@ renderResult(data)                 // 결과 → DOM (재사용: 내 기록의 '
 saveResult(data)                   // 최근 10건 유지
 listResults() / removeResult(id) / clearResults()
 
-// js/feedback.js
-initFeedbackForm()
 ```
 
 > **`callApi`가 예외를 던지지 않는 계약**은 A2-1의 `llm.generate_json`에서 이어옵니다.
-> 호출하는 쪽(`study.js`, `feedback.js`)에 `try/catch`가 흩어지지 않고,
+> 호출하는 쪽(`study.js`)에 `try/catch`가 흩어지지 않고,
 > 실패 처리를 **한 군데(§8.4 문구표)**에서 관리할 수 있습니다.
 
 ### 4.4 백엔드 함수 계약
@@ -527,8 +523,8 @@ Vercel은 `requirements.txt`에서 FastAPI·Flask·Django를 발견하면 **프�
      · 요약을 먼저 읽지 말고 퀴즈부터 (인출 연습)
      · 틀린 문항의 용어만 노트에서 다시 찾기
    [FAQ]  아코디언 4개 (내 노트가 저장되나요 / 왜 느린가요 / 무료인가요 / 틀린 퀴즈가 나와요)
-   [문의]  이름 · 이메일 · 내용 · ☐ 최근 요약 제목을 함께 보내기
-           [ 보내기 ]
+   [문의]  "따로 문의 창구를 운영하지 않고 GitHub 이슈로 받습니다"
+           [ GitHub에 이슈 남기기 → ]
 ```
 
 ### 5.3 반응형 브레이크포인트
@@ -854,17 +850,7 @@ def validate(data: dict) -> str | None:
 | 실패 | `4xx/5xx` + `{"ok": false, "code": "...", "message": "..."}` |
 | 타임아웃 | `requests.post(..., timeout=40)` — 자동 재시도 없음 (§8.3) |
 
-### 7.2 `POST /api/feedback` (보너스 B)
-
-| | |
-|---|---|
-| 요청 | `{"name":"...", "email":"...", "message":"...", "include_topic": true, "topic":"..."}` |
-| 성공 | `200` + `{"ok": true}` |
-| 웹훅 미설정 | `503` + `code: "WEBHOOK_NOT_CONFIGURED"` |
-| 검증 | `name` 1~40자, `email` `@` 포함 40자 이하, `message` 5~1,000자 |
-| 전송 필드 | `name`, `email`, `message`, `topic`(동의 시에만), `received_at` — **노트 원문은 절대 보내지 않는다** |
-
-### 7.3 `GET /api/health` (배포 진단용)
+### 7.2 `GET /api/health` (배포 진단용)
 
 ```jsonc
 { "ok": true, "python": "3.12.x", "requests": "2.x.x",
@@ -878,7 +864,7 @@ def validate(data: dict) -> str | None:
 > 1초 만에 가릅니다. `has_api_key`에 키의 앞 4글자 같은 걸 넣지 마십시오 —
 > 그 순간 이 엔드포인트가 유출 경로가 됩니다.
 
-### 7.4 오류 코드 ↔ HTTP 상태
+### 7.3 오류 코드 ↔ HTTP 상태
 
 | code | HTTP | 발생 지점 |
 |------|:----:|-----------|
@@ -897,7 +883,7 @@ def validate(data: dict) -> str | None:
 | `BAD_CONFIG` | 500 | `CLAUDE_MODEL`·`COPA_API_URL`이 **빈 값**으로 등록됨 (§12.4) |
 | `INTERNAL` | 500 | 위 어디에도 안 걸린 예외 |
 
-### 7.5 Vercel Python 함수 골격
+### 7.4 Vercel Python 함수 골격
 
 ```python
 # api/summarize.py
@@ -961,7 +947,6 @@ class handler(BaseHTTPRequestHandler):        # ★ 소문자 handler ★
 | E14 | 응답 JSON 검증 실패 (§6.4) | 불량 | `INVALID_AI_OUTPUT` | 502. **재시도하지 않음** |
 | E15 | `stop_reason == "refusal"` | 불량 | `AI_REFUSED` | 422 + "다른 내용으로 시도해 주세요" |
 | E16 | 그 밖의 예외 | 외부 | `INTERNAL` | 500. 예외 원문을 응답에 넣지 않는다 |
-| E17 | 웹훅 미설정 (문의) | 거절 | `WEBHOOK_NOT_CONFIGURED` | 503 + 대체 연락처 안내 |
 | E18 | localStorage 용량 초과 | 차단 | — | 가장 오래된 기록부터 삭제 후 재시도, 실패 시 토스트 |
 
 > **E8·E9를 사용자에게 "API 키가 없습니다"라고 보여주지 않는 이유** — 서비스 내부 상태를
@@ -1016,7 +1001,6 @@ class handler(BaseHTTPRequestHandler):        # ★ 소문자 handler ★
 | `UPSTREAM_ERROR` / `INTERNAL` / `NO_API_KEY` / `UPSTREAM_AUTH` | 지금은 되새김이 잠시 쉬고 있어요. 잠시 후 다시 시도해 주세요. | 다시 시도 |
 | `INVALID_AI_OUTPUT` | 결과를 다듬는 데 실패했어요. 한 번 더 시도하면 대개 잘 나와요. | 다시 시도 |
 | `AI_REFUSED` | 이 내용으로는 퀴즈를 만들기 어려워요. 다른 노트로 시도해 주세요. | — |
-| `WEBHOOK_NOT_CONFIGURED` | 문의 채널이 아직 연결되지 않았어요. 저장소 이슈로 남겨주세요. | — |
 | (네트워크 끊김) | 인터넷 연결을 확인해 주세요. | 다시 시도 |
 
 ---
@@ -1057,7 +1041,6 @@ JS 파일에 넣든, 난독화하든, 빌드 때 주입하든 결과는 같습�
 | `ANTHROPIC_API_KEY` | ✅ | — | 교육용 **virtual key**. `x-api-key` 헤더로 나간다 |
 | `COPA_API_URL` | — | `https://copa.codyssey.kr/v1/messages` | 엔드포인트가 바뀌어도 코드를 안 고치기 위해 뺀다 |
 | `CLAUDE_MODEL` | — | `claude-sonnet-4` | 모델 교체 (재배포만 하면 코드 수정 없이 바뀜). 대안: `claude-haiku-4` |
-| `WEBHOOK_URL` | — | 없음 | 문의/결과 전송 대상 (보너스 B). **URL 자체가 비밀** |
 | `RATE_LIMIT_PER_MIN` | — | `5` | 인스턴스당 IP별 분당 허용 횟수 |
 
 ### 9.3 설정 방법
@@ -1223,26 +1206,36 @@ vercel env pull .env.local     # Vercel에 넣어둔 값을 그대로 내려받�
 > **누구의 기록인지 구분할 수 없고**, 남의 노트를 볼 수 있는 구조가 됩니다.
 > "저장은 하되 서버에 두지 않는다"가 로그인 없는 서비스의 정직한 선택입니다.
 
-### 11.2 알림 자동화 (외부 웹훅)
+### 11.2 문의 — 폼을 만들었다가 철회한 기록
 
-```
-[문의 폼] → POST /api/feedback → WEBHOOK_URL (Make / Zapier / Google Apps Script)
-                                   → Google Sheets 행 추가 + 이메일/슬랙 알림
-```
+처음 설계는 **문의 폼 + 외부 웹훅**이었습니다 (`POST /api/feedback` → `WEBHOOK_URL`).
+코드는 완성했고 검증도 통과했지만, **보낼 곳을 연결하지 않은 채 배포**됐습니다.
+배포 URL에서 실제로 눌러 보니 `503 WEBHOOK_NOT_CONFIGURED`가 나왔습니다.
 
-- `WEBHOOK_URL`은 **환경 변수**입니다. URL 자체에 인증 토큰이 들어 있어 **URL이 곧 비밀**입니다.
-- 웹훅 호출 타임아웃 **5초**, 재시도 없음. 실패 시 사용자에게 `INTERNAL`로 안내.
-- 사용자에게는 웹훅의 존재를 노출하지 않습니다 (응답에 URL·상태 코드를 넣지 않음).
+| 안 | 문제 |
+|----|------|
+| 웹훅을 연결한다 (Apps Script 등) | 개인 계정에 묶인 URL을 운영해야 하고, **그 URL 자체가 비밀**이라 과제 저장소와 함께 관리하기 부담스럽다 |
+| 폼은 두고 "연결되지 않았어요"로 둔다 | **화면에 보이는데 눌러도 안 되는 상태.** 가장 나쁘다 |
+| **폼을 없애고 GitHub 이슈로 안내** | ✅ **채택** |
 
-### 11.3 무엇을 보내고 무엇을 안 보내는가
+**채택 이유** — 이 서비스는 학습용 과제 프로젝트이고 코드가 공개돼 있습니다.
+이슈가 자연스러운 창구이고, **개인정보를 아예 받지 않게 되어** 지킬 것도 줄어듭니다.
 
-| 보낸다 | 보내지 않는다 |
+폼을 지우면서 `api/feedback.py`·`js/feedback.js`·`WEBHOOK_URL` 환경 변수·
+`WEBHOOK_NOT_CONFIGURED` 오류 코드도 함께 지웠습니다.
+**죽은 코드를 남겨두는 것보다 없는 편이 정직합니다.** (되살리려면 git 이력에 있습니다.)
+
+> 보너스 1번(운영 자동화 / **데이터 저장 고도화**)은 §11.1의 localStorage 기록으로 충족합니다.
+
+### 11.3 밖으로 나가는 데이터
+
+| 나간다 | 나가지 않는다 |
 |--------|---------------|
-| 이름, 이메일, 문의 내용, 수신 시각 | **노트 원문 (절대)** |
-| 최근 결과의 `topic` — **체크박스로 동의했을 때만** | 요약·용어·퀴즈 전체, IP, 브라우저 정보 |
+| AI 처리를 위해 게이트웨이로 보내는 **노트 본문** (저장하지 않음) | 그 밖의 **모든 것** |
+| — | 이름·이메일 등 개인정보 (**애초에 받지 않는다**) |
+| — | 요약·용어·퀴즈 결과 (브라우저에만) |
 
-> 사용자는 "문의를 보낸다"고 생각했지 "내 필기를 보낸다"고 생각하지 않았습니다.
-> **동의하지 않은 데이터를 함께 보내는 것**이 이 구조에서 가장 흔한 사고입니다.
+**개인정보를 받지 않으면 지킬 것도 없습니다.** 문의 폼을 없애면서 얻은 부수 효과입니다.
 
 ---
 
@@ -1419,7 +1412,7 @@ requests>=2.31.0,<3.0.0
 ### Day 6 — 8/31(월) 보너스 + 문서화
 
 - [ ] 다크 모드(FOUC 방지 포함) + 마이크로 인터랙션 4종 (§10)
-- [ ] `js/history.js` localStorage 기록 + `api/feedback.py` 웹훅 (§11)
+- [ ] `js/history.js` localStorage 기록 (§11.1)
 - [ ] `README.md` 작성 (소개·스택·배포 URL·실행 방법·환경 변수)
 - [ ] `docs/서비스기획서.md` 작성 (§3 + §6 + §8 발췌)
 - [ ] **§9.4 키 유출 점검 1회차**
@@ -1848,9 +1841,6 @@ CLAUDE_MODEL=
 # 엔드포인트가 바뀔 때만. 기본: https://copa.codyssey.kr/v1/messages
 COPA_API_URL=
 
-# 문의 폼을 외부 도구(Make·Zapier·Apps Script)로 보낼 때만 (보너스 B)
-# ※ URL 자체가 비밀입니다. 공유·스크린샷 금지.
-WEBHOOK_URL=
 
 # IP별 분당 허용 호출 수 (기본 5)
 RATE_LIMIT_PER_MIN=
@@ -1932,7 +1922,6 @@ node_modules/
   <script src="js/router.js"></script>
   <script src="js/history.js"></script>
   <script src="js/study.js"></script>
-  <script src="js/feedback.js"></script>
 </body>
 </html>
 ```
