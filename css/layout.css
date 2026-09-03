@@ -177,12 +177,38 @@ main {
 
 /* ══════════════ 모바일 ~ 599px : 오버레이 메뉴 ══════════════ */
 @media (max-width: 599px) {
+  /* ★ 메뉴가 열려 있는 동안 헤더의 backdrop-filter 를 끈다 ★
+     ─────────────────────────────────────────────────────────────
+     backdrop-filter(그리고 filter·transform·perspective)가 걸린 요소는
+     position:fixed 자손의 **containing block** 이 된다. 즉 아래 .site-nav 의
+     inset:0 이 "화면 전체"가 아니라 "헤더 크기"를 뜻하게 된다.
+
+     실측(375×812): 배경이 812px 가 아니라 112px 만 칠해져서, 그 아래 링크들이
+     본문 위에 그대로 겹쳐 보였다. backdrop-filter 를 끄니 112px → 812px.
+
+     헤더가 .site-nav 의 조상이라 생기는 문제다. 메뉴가 닫혀 있을 때는
+     블러가 그대로 살아 있고, 열렸을 때만 해제한다. */
+  body.nav-open .site-header {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--bg);          /* 반투명이면 메뉴가 로고·햄버거에 비친다 */
+  }
+
+  /* ★ 헤더 "아래"에서 시작한다 — inset:0 으로 화면 전체를 덮으면 안 된다 ★
+     z-index 는 같은 쌓임 맥락 안에서만 비교된다. .site-nav 는 .site-header 의
+     자식이라, 헤더의 z-index:20 은 헤더 덩어리 전체에 적용되고 그 안에서
+     nav(15)가 로고·햄버거 위에 그려진다. 즉 inset:0 이면 **닫기 버튼이 가려져
+     메뉴를 닫을 수 없다.** top 을 헤더 높이만큼 내려 헤더를 비워 둔다. */
   .site-nav {
     display: none;
     position: fixed;
-    inset: 0;
+    top: var(--header-h);
+    right: 0;
+    bottom: 0;
+    left: 0;
     background: var(--bg);
-    padding: 5rem 1.5rem 2rem;
+    padding: 1.25rem 1.5rem 2rem;
+    overflow-y: auto;               /* 항목이 늘어나도 화면 밖으로 나가지 않게 */
     z-index: 15;
   }
   .site-nav.is-open { display: block; }
